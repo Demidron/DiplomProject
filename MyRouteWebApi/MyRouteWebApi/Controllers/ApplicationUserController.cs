@@ -6,12 +6,18 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using DataLayer.Entities;
+using DTO;
+using DTO.Interfaces.UseCases;
+using DTO.Models.UseCaseRequests;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using MyRouteWebApi.Models;
+using PresentationLayer.Models;
+using PresentationLayer.Presenters;
+using PresentationLayer.Services;
 
 namespace MyRouteWebApi.Controllers
 {
@@ -19,69 +25,48 @@ namespace MyRouteWebApi.Controllers
     [ApiController]
     public class ApplicationUserController : ControllerBase
     {
-        private UserManager<ApplicationUser> _userManager;
-        private SignInManager<ApplicationUser> _singInManager;
         private readonly ApplicationSettings _appSettings;
-        public ApplicationUserController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IOptions<ApplicationSettings> appSettings)
+        private readonly IRegisterUserUseCase _registerUserUseCase;
+        private readonly RegisterUserPresenter _registerUserPresenter;
+        private readonly ILoginUseCase _loginUseCase;
+        private readonly LoginPresenter _loginPresenter;
+        private readonly IRefreshTokenUseCase _refreshTokenUseCase;
+        private readonly RefreshTokenPresenter _refreshTokenPresenter;
+
+        public ApplicationUserController(IOptions<ApplicationSettings> appSettings, IRegisterUserUseCase registerUserUseCase, RegisterUserPresenter registerUserPresenter, ILoginUseCase loginUseCase, LoginPresenter loginPresenter, IRefreshTokenUseCase refreshTokenUseCase, RefreshTokenPresenter refreshTokenPresenter)
         {
-            _userManager = userManager;
-            
-            _singInManager = signInManager;
             _appSettings = appSettings.Value;
+            _registerUserUseCase = registerUserUseCase;
+            _registerUserPresenter = registerUserPresenter;
+            _loginUseCase = loginUseCase;
+            _loginPresenter = loginPresenter;
+            _refreshTokenUseCase = refreshTokenUseCase;
+            _refreshTokenPresenter = refreshTokenPresenter;
         }
 
         [HttpPost]
         [Route("Register")]
-        public async Task<Object> PostApplicationUser(RegisterModel model)
+        public async Task<Object> RegisterUserTraveler(RegisterModel model)
         {
-            model.Role = "Traveler";
-            var applicationUser = new ApplicationUser()
-            {
-                UserName = model.UserName,
-                Email = model.Email,
-                FullName = model.FullName
-            };
-
-            try
-            {
-                var result = await _userManager.CreateAsync(applicationUser, model.Password);
-                await _userManager.AddToRoleAsync(applicationUser, model.Role);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+            await _registerUserUseCase.Handle(new RegisterUserRequest(model.UserName, model.Email, model.Password, model.FullName, Constants.Strings.Roles.Traveler), _registerUserPresenter);
+            return _registerUserPresenter.ContentResult;
         }
 
         [HttpPost]
-        [Route("Login")]
-        //POST : /api/ApplicationUser/Login
+        [Route("LoginTraveler")]
+        //POST : /api/ApplicationUser/LoginTraveler
         public async Task<IActionResult> Login(LoginModel model)
         {
-            var user = await _userManager.FindByNameAsync(model.UserName);
+            await _loginUseCase.Handle(new LoginRequest(model.UserName, model.Password, Constants.Strings.Roles.Traveler), _loginPresenter);
+            return _loginPresenter.ContentResult;
+        }
 
-            if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
-            {
-                var role = await _userManager.GetRolesAsync(user);
-                IdentityOptions _options = new IdentityOptions();
-                var tokenDescriptor = new SecurityTokenDescriptor
-                {
-                    Subject = new ClaimsIdentity(new Claim[]
-                    {
-                        new Claim("UserID",user.Id.ToString()),
-                        new Claim(_options.ClaimsIdentity.RoleClaimType,role.FirstOrDefault())
-                    }),
-                    Expires = DateTime.UtcNow.AddDays(1),//AddMinutes(5)
-                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes("1234567890123456")), SecurityAlgorithms.HmacSha256Signature)
-                };
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var securityToken = tokenHandler.CreateToken(tokenDescriptor);
-                var token = tokenHandler.WriteToken(securityToken);
-                return Ok(new { token });
-            }
-            else
-                return BadRequest(new { message = "Username or password is incorrect." });
+        [HttpPost]
+        [Route("RefreshToken")]
+        public async Task<ActionResult> RefreshToken(RefreshTokenModel request)
+        {
+            await _refreshTokenUseCase.Handle(new RefreshTokenRequest(request.AccessToken, request.RefreshToken, _appSettings.JWT_Secret), _refreshTokenPresenter);
+            return _refreshTokenPresenter.ContentResult;
         }
     }
 }

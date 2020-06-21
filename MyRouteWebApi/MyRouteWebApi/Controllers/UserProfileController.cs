@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DataLayer.Entities;
+using DTO;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -27,9 +28,26 @@ namespace MyRouteWebApi.Controllers
         //GET : /api/UserProfile
         public async Task<Object> GetUserProfile()
         {
+            string userId = User.Claims.First(c => c.Type == Constants.Strings.JwtClaimIdentifiers.UserId).Value;
+
+            var user = await _userManager.FindByIdAsync(userId);
+            return new
+            {
+                user.FullName,
+                user.Email,
+                user.UserName
+            };
+        }
+
+        [HttpPost]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        //GET : /api/UserProfile
+        public async Task<Object> SetUserProfile(string name)
+        {
             string userId = User.Claims.First(c => c.Type == "UserID").Value;
 
             var user = await _userManager.FindByIdAsync(userId);
+           
             return new
             {
                 user.FullName,
@@ -51,7 +69,7 @@ namespace MyRouteWebApi.Controllers
         [Route("ForTraveler")]
         public string GetCustomer()
         {
-            return "Web method for Customer";
+            return "Web method for Traveler";
         }
 
         [HttpGet]
