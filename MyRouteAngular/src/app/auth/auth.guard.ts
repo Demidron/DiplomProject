@@ -11,9 +11,11 @@ export class AuthGuard implements CanActivate {
   constructor(private router:Router,private service:UserService){}
 
   canActivate(next: ActivatedRouteSnapshot,state: RouterStateSnapshot): boolean {
-      if (localStorage.getItem('token') != null)
+    console.log("Ruard open");
+      if (localStorage.getItem('accessToken') != null)
       {
         let roles=next.data['permittedRoles'] as Array<string>;//из app-routing передается
+        console.log("Ruard roles"+roles);
         if(roles){
           if(this.service.roleMatch(roles)) return true;
           else{

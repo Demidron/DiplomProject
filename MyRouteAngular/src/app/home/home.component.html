@@ -1,17 +1,47 @@
-<nav class="navbar navbar-dark bg-dark">
-  <a class="navbar-brand text-white">JWT Auth System</a>
+<!-- <nav class="navbar navbar-dark bg-dark">
+  <a class="navbar-brand text-white">You Route</a>
   <ul class="navbar-nav mr-auto">
     <li class="nav-item">
-      <a class="nav-link" routerLink="/adminpanel">Admin Panel</a>
+      <a routerLink='/home/plan-route' routerLinkActive='active'>Plan route</a>
+      <a routerLink='/home/user-info' routerLinkActive='active'>My info</a>
+      <a class="nav-link" routerLink="/adminpanel">Admin Panel</a> 
     </li>
   </ul>
   <button class="btn btn-danger my-2 my-sm-0" (click)="onLogout()">Logout</button>
-</nav>
+</nav> -->
 
-<div class="card m-5" style="width:18rem" *ngIf="userDetails">
-  <ul class="list-group">
-    <li class="list-group-item"><strong>Username : </strong>{{userDetails.userName}}</li>
-    <li class="list-group-item"><strong>FullName : </strong>{{userDetails.fullName}}</li>
-    <li class="list-group-item"><strong>Email : </strong>{{userDetails.email}}</li>
-  </ul>
-</div>
+<nav class="navbar navbar-expand-md navbar-light" style="background-color: #e3f2fd;">
+  <a class="navbar-brand" href="#">My route</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse " id="navbarCollapse" style="background-color: #e3f2fd;">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item">
+        <!-- <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a> -->
+        <a class="nav-link" routerLink='/home/plan-route' routerLinkActive='active'>Plan route</a>
+      </li>
+      <ng-template [ngIf]="isLogin">
+        <li class="nav-item">
+          <a class="nav-link"  routerLink='/home/user-info' routerLinkActive='active'>My info</a>
+        </li>
+      </ng-template>
+
+      <!-- <li class="nav-item">
+        <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+      </li> -->
+    </ul>
+    <div *ngIf="isLogin; then thenBlock else elseBlock"></div>
+    <ng-template #thenBlock>
+      <button class="btn btn-danger my-2 my-sm-0" (click)="onLogout()">Logout</button>
+    </ng-template>
+    <ng-template #elseBlock>
+        <button class="btn btn-success my-2 my-sm-0" (click)="onSignIn()">Sign in</button>
+    </ng-template>
+    
+  </div>
+</nav>
+<router-outlet></router-outlet>
+
+
+

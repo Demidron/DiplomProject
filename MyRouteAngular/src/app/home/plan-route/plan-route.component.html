@@ -1,0 +1,94 @@
+
+<div class="row main">
+  <div class="col-md-4 searchPanel col-lg-3 col-sm-5 col-6" style="height: 100%;">
+
+  <div class="searchForm scrollbar" id="style-2"  [ngClass]="{'show': createRoute.isNewRoute}">
+    <app-create-route #createRoute id="createRoute" (selectedRoute)="routes.push($event)"  ></app-create-route>
+
+  </div>
+
+
+
+  <div class="scrollbar" id="style-3">
+    <div class="addRouteCard text-center" [ngClass]="{'hide': createRoute.isNewRoute}">
+
+      <button class="btn btn-link" (click)="createRoute.createNewRoute(routes.length>0 ? routes[routes.length-1] : null)">
+        <fa-icon [icon]="faPlusCircle" class="fa-3x"></fa-icon>
+      </button>
+    </div>
+    <div *ngFor="let route of routes; index as i;" class="card-header localityCard">
+      
+      <div class="row">
+        <span class="col-8" >Route {{i}}</span>
+        <button class="btn btn-link col-2" (click)="DeleteRoute(i)">
+          <mat-icon >clear</mat-icon>
+        </button>
+        <button class="btn btn-link col-2" (click)="EditRoute(i)">
+          <mat-icon >create</mat-icon>
+        </button>
+      </div>
+
+
+      <a href="#collapse-localityCard-{{i}}" aria-expanded="true" data-toggle="collapse"
+      class="row accordion-toggle">
+      <fa-icon [icon]="faChevronDown" class="col-1"></fa-icon>
+      </a>
+
+
+      <div id="collapse-localityCard-{{i}}" class="collapse collapse-route route-path" >
+        <ul >
+          <div *ngFor="let step of route.RouteDetails[route.SelectedRouteIndex].RouteStepsMas; index as i2;">
+            <li *ngIf="i2==0">
+              <span  class="bus-line"></span>
+              <div class="title">{{route.RouteDetails[route.SelectedRouteIndex].StartAddress}}</div>
+              <div class="time">
+                <span>{{route.RouteDetails[route.SelectedRouteIndex].DepartureTime | date: "HH:mm"}}</span>
+                  <span></span>
+              </div>
+            </li>      
+            <li  >
+                <span  class="bus-line"></span>
+                <div class="title">{{step.DepartureStop}}</div>
+                <div class="info">{{step.Instructions}}</div>
+                <div class="name"> {{step.DurationText}}  {{step.DistanceText}}</div>
+                <div class="time">
+                    <span>{{step.DepartureTime | date: "HH:mm"}}</span>
+                    <span>{{step.ArrivalTime  | date: "HH:mm"}}</span>
+                </div>
+            </li>
+            <li *ngIf="route.RouteDetails[route.SelectedRouteIndex].RouteStepsMas.length-1==i2">
+              <span ></span>
+              <div class="title">{{route.RouteDetails[route.SelectedRouteIndex].EndAddress}}</div>
+              <div class="time">
+                <span>{{route.RouteDetails[route.SelectedRouteIndex].ArrivalTime | date: "HH:mm"}}</span>
+                  <span></span>
+              </div>
+            </li>
+          </div>
+
+        </ul>
+      </div>
+    </div>
+
+
+
+
+
+    <!-- <AddRouteWaypoint
+      
+      (setAddress)="addWaypoint($event);"
+      
+      addressType="geocode"  
+      placeholder="{{addressEnd? '': 'Enter location or click map'}}" >
+    </AddRouteWaypoint> -->
+
+
+
+
+  </div>
+
+  </div>
+  <div class="col-md-8 col-sm-7 col-lg-9 col-6 map">
+    <div #mapContainer id="map"></div>
+  </div>
+</div>

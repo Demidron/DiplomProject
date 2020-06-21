@@ -1,19 +1,21 @@
 import { Injectable } from '@angular/core';
 import { FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
+
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-
-  constructor(private fb:FormBuilder,private http:HttpClient) { }
+  private timerRefreshTocken;
+  constructor(private fb:FormBuilder,private http:HttpClient,private router: Router) { }
   
   readonly BaseURI='http://localhost:6405/api';
 
   formModel = this.fb.group({
     UserName: ['', Validators.required],
-    Email: ['', Validators.email],
+    Email: ['',[Validators.required, Validators.pattern("^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$")]],
     FullName: [''],
     Passwords: this.fb.group({
       Password: ['', [Validators.required, Validators.minLength(4)]],
@@ -44,7 +46,32 @@ export class UserService {
     return this.http.post(this.BaseURI + '/ApplicationUser/Register', body);
   }
   login(formData) {
-    return this.http.post(this.BaseURI + '/ApplicationUser/Login', formData);
+    return this.http.post(this.BaseURI + '/ApplicationUser/LoginTraveler', formData);
+  }
+  setRefreshTimeToken(){
+    if(this.timerRefreshTocken){
+      clearInterval(this.timerRefreshTocken);
+    }
+    this.timerRefreshTocken=setInterval(()=> {
+      this.refreshToken(localStorage.getItem('accessToken'),localStorage.getItem('refreshToken')).subscribe(
+        (res: any) => {
+            localStorage.setItem('refreshToken', res.refreshToken);
+            localStorage.setItem('accessToken', res.accessToken.token);
+            // this.router.navigateByUrl('/home');
+            console.log("Token refreshed");
+            
+          },
+          err => {
+            localStorage.removeItem('refreshToken');
+            localStorage.removeItem('accessToken');
+            this.router.navigateByUrl('/user/login');
+          }
+        )
+    },60000);
+
+  }
+  refreshToken(accessToken,refreshToken){
+    return this.http.post(this.BaseURI + '/ApplicationUser/RefreshToken',{accessToken:accessToken,refreshToken:refreshToken});
   }
 
   getUserProfile() {
@@ -52,7 +79,7 @@ export class UserService {
   }
   roleMatch(allowedRoles): boolean {
     var isMatch = false;
-    var payLoad = JSON.parse(window.atob(localStorage.getItem('token').split('.')[1]));//из токена беру нагрузку и распарсить
+    var payLoad = JSON.parse(window.atob(localStorage.getItem('accessToken').split('.')[1]));//из токена беру нагрузку и распарсить
     var userRole = payLoad.role;
     allowedRoles.forEach(element => {
       if (userRole == element) {

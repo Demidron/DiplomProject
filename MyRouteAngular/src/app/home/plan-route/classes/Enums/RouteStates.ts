@@ -1,0 +1,4 @@
+enum RouteStates{
+    "SELECTED",
+    "UNSELECTED",
+}

@@ -1,0 +1,148 @@
+<form  class="SettingsRoute card-header" [ngClass]="{'hideSettingsRoute': isVarRoute}"  > <!-- (submit)="refreshNewRoute()" -->
+  
+  <input type="text" (click)="onClickStart()" class="form-control form-control-sm"
+  [disabled]="createRouteModel.isContinueRoute"
+    placeholder="{{createRouteModel.addressStart? '': 'Enter location or click map'}}"
+    value="{{createRouteModel.addressStart}}"
+    #addresstextStart>
+  <div class="custom-control custom-checkbox" [ngClass]="{'displayNone': !directionPlan.prevRoute}">
+     <input type="checkbox" name="isContinueRoute"  class="custom-control-input" [(ngModel)]="createRouteModel.isContinueRoute"  
+      (change)="directionPlan.onContinueModeChange()" id="cbContinueRoute"><!-- [disabled]="!isContinueRoute" -->
+    <label class="custom-control-label" for="cbContinueRoute">continue the last way</label>
+  </div>
+  <input type="text" (click)="onClickEnd()" class="form-control form-control-sm"
+  
+    placeholder="{{createRouteModel.addressEnd? '': 'Enter location or click map'}}"
+    value="{{createRouteModel.addressEnd}}"
+    #addresstextEnd>
+
+  <div class="input-group mb-3">
+    <div class="input-group-prepend">
+      <label class="input-group-text" for="travelMode">Travel mode</label>
+    </div>
+    <select name="selectTravelMode" [(ngModel)]="createRouteModel.travelMode" (change)="createRoute.updateRoute()" #travelMode class="custom-select" id="travelMode">  
+      <option value="DRIVING">Driving</option>
+      <option value="WALKING">Walking</option>
+      <option value="BICYCLING">Bicycling</option>
+      <option selected value="TRANSIT">Transit</option>
+    </select>
+  </div>
+
+  <div class="input-group">
+    <input class="form-control" placeholder="yyyy-mm-dd" 
+    [navigation]="'arrows'" [outsideDays]="'visible'" [showWeekNumbers]="'true'"
+    ngbDatepicker #dpCreateRoute="ngbDatepicker"  [markDisabled]="createRouteModel.markDisabled"
+    name="dp" [(ngModel)]="createRouteModel.dpModel">
+    <div class="input-group-append">
+      <button #buttonCalendar class="btn btn-outline-secondary " (click)="dpCreateRoute.toggle()" type="button"></button>
+    </div>
+  </div>
+  <ngb-timepicker name="tp" [size]="'small'" [(ngModel)]="createRouteModel.dateTimeStart" ></ngb-timepicker>  <!--(ngModelChange)="onDateTimeChange()" -->
+    
+   <button class="btn btn-sm btn-primary btn-block" (click)="directionPlan.onSubmitRoute();">Submit</button><!--(click)="isNewRoute=false;" -->
+</form>
+<div class="SettingsRouteCard row " [ngClass]="{'hide': !isVarRoute}">
+  <button class="btn btn-link col-2" (click)="isVarRoute=!isVarRoute">
+    <fa-icon [icon]="faChevronLeft" class="fa-3x"></fa-icon>
+    
+  </button>
+  <div class="col-10">
+    <p>{{createRouteModel.addressStart}}</p>
+   
+    <p>{{createRouteModel.addressEnd}}</p>
+    <p>Daparture: {{createRouteModel.getDateTime() | date:"HH:mm"}}</p>
+  </div>
+
+</div>
+
+    
+  <div id="accordion" *ngIf="isVarRoute" class="arrowSelectRoute">  
+
+    <div *ngFor="let routeDetail of directionPlan.newRoute?.RouteDetails; index as i" (click)="directionPlan.onClickRoute(i)" 
+     class="createRouteAlternatives card card-header list-group-item list-group-item-action"
+     
+     [ngClass]="{ 'bg-info' : i== directionPlan.newRoute.SelectedRouteIndex}">
+      <div class="text-center" style="padding: 5px 25px 5px 25px;">
+        <span >
+          {{routeDetail.DepartureTime | date: "HH:mm"}} — {{routeDetail.ArrivalTime | date: "HH:mm"}}
+          {{routeDetail.Distance.text}}
+          <div  class="row">
+            <div *ngFor="let step of routeDetail.RouteStepsMas; index as i3;" [ngSwitch]="step.TravelMode" >
+              <ng-template ngSwitchCase="TRANSIT">
+                  <!-- <img [src]="step.Icon" class="iconSelectRoute"> -->
+                  <span *ngIf="step.Icon; else elseBlock" >
+                      <img [src]="step.Icon" class="iconSelectRoute" >
+                  </span>
+                  <ng-template #elseBlock>
+                    <span>
+                      
+                      <!-- <img [src]="step.transit.line.vehicle.icon" class="iconSelectRoute" > -->
+                    </span>
+                  </ng-template>
+                </ng-template>
+                <ng-template ngSwitchCase="WALKING">
+                    <span >
+                      <mat-icon class="iconSelectRoute" >directions_walk</mat-icon>
+                    </span>
+                </ng-template>
+                <span *ngIf="routeDetail.RouteStepsMas.length-1!=i3"  >
+                  <fa-icon [icon]="faChevronRight" class="arrowSelectRoute"></fa-icon>
+                </span>
+            </div>
+          </div>
+        </span>
+
+        <a data-toggle="collapse"  
+        
+        [href]="'#d' + i" aria-expanded="true" aria-controls="collapseOne">
+          <mat-icon 
+          (click)="elem.class = elem.class == 'd' + i ? '' :  'd' + i;"
+
+         [ngClass]="{ 'hideСhevron' : elem.class !== 'd' + i }"
+
+            #elem>expand_less</mat-icon>
+        </a>
+      </div>
+      <div [id]="'d' + i" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
+        <div class="route-path">
+          <ul >
+            <div *ngFor="let step of routeDetail.RouteStepsMas; index as i4;">
+              <li *ngIf="i4==0">
+                <span  class="bus-line"></span>
+                <div class="title">{{routeDetail.StartAddress}}</div>
+                <div class="time">
+                  <span>{{routeDetail.DepartureTime | date: "HH:mm"}}</span>
+                    <span></span>
+                </div>
+              </li>           
+              <li >
+                <span  class="bus-line"></span>
+                <div class="title">{{step.DepartureStop}}</div>
+                <div class="info">{{step.Instructions}}</div>
+                <div class="name"> {{step.DurationText}}  {{step.DistanceText}}</div>
+                <div class="time">
+                    <span>{{step.DepartureTime | date: "HH:mm"}}</span>
+                    <span>{{step.ArrivalTime  | date: "HH:mm"}}</span>
+                </div>
+  
+              </li>
+              <li *ngIf="routeDetail.RouteStepsMas.length-1==i4">
+                <span ></span>
+                <div class="title">{{routeDetail.EndAddress}}</div>
+                <div class="time">
+                  <span>{{routeDetail.ArrivalTime | date: "HH:mm"}}</span>
+                    <span></span>
+                </div>
+              </li>
+            </div>
+ 
+          </ul>
+        </div>
+      </div>
+
+    </div>
+    <div style="margin: 10px;">
+      <button class="btn  btn-primary btn-block" (click)="directionPlan.addNewRoute();">Add route</button>
+
+    </div>
+  </div>

@@ -1,0 +1,4 @@
+const enum PointTypes {
+    TRAVELPOINT="TRAVELPOINT",
+    PLANPOINT="PLANPOINT",
+}
