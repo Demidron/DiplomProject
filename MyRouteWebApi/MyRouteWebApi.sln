@@ -5,9 +5,15 @@ VisualStudioVersion = 16.0.29613.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyRouteWebApi", "MyRouteWebApi\MyRouteWebApi.csproj", "{73488D08-A755-4EFE-B3DB-E40E23EE7D18}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataLayer", "DataLayer\DataLayer.csproj", "{77FE4FA3-CE10-40B4-AA24-7050F4DFF669}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataLayer", "DataLayer\DataLayer.csproj", "{77FE4FA3-CE10-40B4-AA24-7050F4DFF669}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TravelWebApi", "TravelWebApi\TravelWebApi.csproj", "{4AE2157B-0D27-44D9-B909-943F715064FB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BusinessLogicLayer", "BusinessLogicLayer\BusinessLogicLayer.csproj", "{B2AC2F46-6E62-4DAB-83C1-A9278082BDDC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TokenProvider", "TokenProvider\TokenProvider.csproj", "{07B401D5-F6DB-41E0-AB44-5C6CCD30B4A9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PresentationLayer", "PresentationLayer\PresentationLayer.csproj", "{1C9731DA-7209-4AA1-BE21-D76A399B6707}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DTO", "DTO\DTO.csproj", "{175A2CF8-6BF9-42A9-A97E-7E389FC3E7DA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +29,22 @@ Global
 		{77FE4FA3-CE10-40B4-AA24-7050F4DFF669}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{77FE4FA3-CE10-40B4-AA24-7050F4DFF669}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{77FE4FA3-CE10-40B4-AA24-7050F4DFF669}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4AE2157B-0D27-44D9-B909-943F715064FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4AE2157B-0D27-44D9-B909-943F715064FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4AE2157B-0D27-44D9-B909-943F715064FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4AE2157B-0D27-44D9-B909-943F715064FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2AC2F46-6E62-4DAB-83C1-A9278082BDDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2AC2F46-6E62-4DAB-83C1-A9278082BDDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2AC2F46-6E62-4DAB-83C1-A9278082BDDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2AC2F46-6E62-4DAB-83C1-A9278082BDDC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{07B401D5-F6DB-41E0-AB44-5C6CCD30B4A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07B401D5-F6DB-41E0-AB44-5C6CCD30B4A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07B401D5-F6DB-41E0-AB44-5C6CCD30B4A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07B401D5-F6DB-41E0-AB44-5C6CCD30B4A9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C9731DA-7209-4AA1-BE21-D76A399B6707}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C9731DA-7209-4AA1-BE21-D76A399B6707}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C9731DA-7209-4AA1-BE21-D76A399B6707}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C9731DA-7209-4AA1-BE21-D76A399B6707}.Release|Any CPU.Build.0 = Release|Any CPU
+		{175A2CF8-6BF9-42A9-A97E-7E389FC3E7DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{175A2CF8-6BF9-42A9-A97E-7E389FC3E7DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{175A2CF8-6BF9-42A9-A97E-7E389FC3E7DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{175A2CF8-6BF9-42A9-A97E-7E389FC3E7DA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

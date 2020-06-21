@@ -27,7 +27,7 @@ namespace DataLayer
         {
             var optionsBuilder = new DbContextOptionsBuilder<EfIDbContext>();
             
-            optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=TravelDb;Username=postgres;Password=Andrew0011", b => b.MigrationsAssembly("DataLayer"));
+            optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=MyRouteDb;Username=postgres;Password=Andrew0011", b => b.MigrationsAssembly("DataLayer"));
             return new EfIDbContext(optionsBuilder.Options);
         }
     }

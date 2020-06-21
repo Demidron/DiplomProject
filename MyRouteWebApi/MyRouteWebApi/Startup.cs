@@ -3,8 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BusinessLogicLayer.Implementations;
+using BusinessLogicLayer.Interfaces;
 using DataLayer;
 using DataLayer.Entities;
+using DTO;
+using DTO.Interfaces.UseCases;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -16,6 +20,10 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using MyRouteWebApi.Models;
+using PresentationLayer.Presenters;
+using PresentationLayer.UseCases;
+using TokenProvider.Interfaces;
+using TokenProvider.Services;
 
 namespace MyRouteWebApi
 {
@@ -32,15 +40,35 @@ namespace MyRouteWebApi
         public void ConfigureServices(IServiceCollection services)
         {
             //Inject AppSettings
-            services.Configure<ApplicationSettings>(Configuration.GetSection("ApplicationSettings"));
+            services.Configure<ApplicationSettings>(Configuration.GetSection(nameof(ApplicationSettings)));
+            var key = new SymmetricSecurityKey( Encoding.UTF8.GetBytes(Configuration["ApplicationSettings:JWT_Secret"].ToString()));
+
+            var jwtAppSettingOptions = Configuration.GetSection(nameof(JwtIssuerOptions));
+            services.Configure<JwtIssuerOptions>(options =>
+            {
+                options.Issuer = jwtAppSettingOptions[nameof(JwtIssuerOptions.Issuer)];
+                options.Audience = jwtAppSettingOptions[nameof(JwtIssuerOptions.Audience)];
+                options.SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);//new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)), SecurityAlgorithms.HmacSha256Signature)
+            });
 
             services.AddControllers();
             services.AddDbContext<EfIDbContext>(options =>
             options.UseNpgsql(Configuration.GetConnectionString("IdentityConnection")));
 
             services.AddDefaultIdentity<ApplicationUser>()
+                .AddTokenProvider("MyRouteApp",typeof(DataProtectorTokenProvider<ApplicationUser>))
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<EfIDbContext>();
+
+            services.AddTransient<IAuthRepository, AuthRepository>();
+            services.AddTransient<ITokenService, TokenService>();
+            services.AddTransient<IRegisterUserUseCase, RegisterUserUseCase>();
+            services.AddTransient<ILoginUseCase, LoginUseCase>();
+            services.AddTransient<IRefreshTokenUseCase, RefreshTokenUseCase>();
+
+            services.AddScoped<RegisterUserPresenter>();
+            services.AddScoped<LoginPresenter>();
+            services.AddScoped<RefreshTokenPresenter>();
 
             services.Configure<IdentityOptions>(options =>
                 {
@@ -55,23 +83,41 @@ namespace MyRouteWebApi
 
             //Jwt Authentication
 
-            var key = Encoding.UTF8.GetBytes(Configuration["ApplicationSettings:JWT_Secret"].ToString());
 
             services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
                 x.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(x => {
-                x.RequireHttpsMetadata = false;
-                x.SaveToken = false;
-                x.TokenValidationParameters = new TokenValidationParameters
+            }).AddJwtBearer(options => {
+                // если равно false, то SSL при отправке токена не используется. 
+                //Данный вариант установлен только дя тестирования. 
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = false;
+                options.TokenValidationParameters = new TokenValidationParameters
                 {
+                    ValidateIssuer = true,
+                    ValidIssuer = jwtAppSettingOptions[nameof(JwtIssuerOptions.Issuer)],
+                    ValidateAudience = true,
+                    ValidAudience = jwtAppSettingOptions[nameof(JwtIssuerOptions.Audience)],
+                    //ValidateIssuer = false,
+                    //ValidateAudience = false,
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
+                    IssuerSigningKey = key,
+                    RequireExpirationTime = false,
+                    ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero
+                };
+                options.Events = new JwtBearerEvents
+                {
+                    OnAuthenticationFailed = context =>
+                    {
+                        if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
+                        {
+                            context.Response.Headers.Add("Token-Expired", "true");
+                        }
+                        return Task.CompletedTask;
+                    }
                 };
             });
         }
